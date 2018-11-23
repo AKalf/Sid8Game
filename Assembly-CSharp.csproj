@@ -61,13 +61,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Models\TAZO_3D_C\DemoScene\Action_Manage.cs" />
-    <Compile Include="Assets\Models\TAZO_3D_C\DemoScene\demo.cs" />
+    <Compile Include="Assets\Models\Bull\DemoScene\Action_Manage.cs" />
+    <Compile Include="Assets\Models\Bull\DemoScene\demo.cs" />
     <Compile Include="Assets\Scripts\CameraScripts\CameraMovement.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyAvatar.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyManager.cs" />
-    <Compile Include="Assets\Scripts\EnemyScripts\EnemyMovement.cs" />
-    <Compile Include="Assets\Scripts\EnemyScripts\EnemyStats.cs" />
     <Compile Include="Assets\Scripts\EnemyScripts\EnemyTypes.cs" />
     <Compile Include="Assets\Scripts\GUI&amp;UIScripts\GUIManager.cs" />
     <Compile Include="Assets\Scripts\PlayerScritps\PlayerHealth.cs" />
@@ -77,9 +75,9 @@
     <Compile Include="Assets\Scripts\SpawnersScripts\Spawner.cs" />
     <Compile Include="Assets\Scripts\SpawnersScripts\SpawnersManager.cs" />
     <Compile Include="Assets\Scripts\UtilityScripts\Timer.cs" />
-    <None Include="Assets\Models\RainEntertainment\FantasyMonster\FireDemon\readMe.txt" />
-    <None Include="Assets\Models\TAZO_3D_C\BOSS\Bull\Shader\Cartoon.shader" />
-    <None Include="Assets\Models\MeshSmith\ToonMonsterII\Toon Rock\readMe.txt" />
+    <None Include="Assets\Models\Mage\FantasyMonster\FireDemon\readMe.txt" />
+    <None Include="Assets\Models\Bull\BOSS\Bull\Shader\Cartoon.shader" />
+    <None Include="Assets\Models\Golem\ToonMonsterII\Toon Rock\readMe.txt" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>F:/Unity/Projects/Sid8Demo/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

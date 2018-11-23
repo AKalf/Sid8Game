@@ -1,0 +1,39 @@
+Scritps: 
+	Player
+		PlayerMovement
+		PlayerShooting
+		PlayerHealth
+	Enemy
+		EnemyAvatar
+		EnemyManager
+		EnemyTypes
+	Camera
+		CameraMovement
+	Projectiles
+		PlayerProjectile
+	Spawner
+		Spawner
+		SpawnerManager
+	
+	GUI & UI
+		GUIManager
+	Utilities
+		Timer
+Models: 
+	Enemy
+		Skeleton
+		Dragon
+		Mage
+		Golem
+		Pig
+	Player
+		Hands
+		
+Prefabs:
+	Enemy
+		Enemy (ball)
+		EnemySkeleton
+	Player
+		PlayerHands
+	Projectile
+		PlayerProjectile
