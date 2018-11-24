@@ -55,5 +55,7 @@ public class PlayerMovement : MonoBehaviour {
         movement -= new Vector3(x * -airDrag, 0, z * -airDrag);
         charController.Move(movement * Time.deltaTime);
     }
-
+    public float GetCurrentSpeed() {
+        return currentSpeed;
+    }
 }

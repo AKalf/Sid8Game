@@ -8,6 +8,8 @@ public class Projectile : MonoBehaviour {
     float speed = 10.0f;
     [SerializeField]
     int damage = 5;
+    [SerializeField]
+    float manaCostPerShot = 3.5f;
     Vector3 targetPosition;
 
 	// Use this for initialization
@@ -33,5 +35,8 @@ public class Projectile : MonoBehaviour {
 
     public int GetDamage() {
         return damage;
+    }
+    public float GetManaCost() {
+        return manaCostPerShot;
     }
 }

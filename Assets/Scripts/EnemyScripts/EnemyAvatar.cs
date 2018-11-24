@@ -29,16 +29,16 @@ public class EnemyAvatar : MonoBehaviour
     [HideInInspector]
     public float m_buffCooldown = 10f;
     private Enemy m_enemy;
-    private Timer engageTimer;
-    private bool spawnSound = false;
+    //private bool spawnSound = false;
 
-    [Range(0, 50)]
-    private int segments = 50;
-    [Range(0, 5)]
-    private float xradius = 5;
-    [Range(0, 5)]
-    private float yradius = 5;
-    LineRenderer line;
+
+    //[Range(0, 50)]
+    //private int segments = 50;
+    //[Range(0, 5)]
+    //private float xradius = 5;
+    //[Range(0, 5)]
+    //private float yradius = 5;
+    //LineRenderer line;
 
 
     // Use this for initialization
@@ -50,14 +50,14 @@ public class EnemyAvatar : MonoBehaviour
     private void Start()
     {
         SelectEnemy();
-
+      
     }
     private void SelectEnemy()
     {
         if (m_enemyType == EnemyTypes.EnemyMellee)
         {
             m_enemy = new EnemyMellee(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject);
-            CreatePoints();
+            
         }
         else if (m_enemyType == EnemyTypes.EnemyRange)
         {
@@ -69,11 +69,7 @@ public class EnemyAvatar : MonoBehaviour
           //  m_enemy = new EnemyLeader(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject, m_buffRange, m_buffAmount, m_buffCooldown);
 
         }
-
-        engageTimer = this.gameObject.AddComponent<Timer>();
         this.gameObject.AddComponent<AudioSource>().volume = 1f;
-
-        engageTimer.StartTimer();
     }
 
     // Update is called once per frame
@@ -84,17 +80,7 @@ public class EnemyAvatar : MonoBehaviour
 
         //        spawnSound = true;
         //    }
-        Debug.DrawLine(transform.position, transform.position + transform.forward * m_range);
-        if (engageTimer.GetTime() > 0.5f)
-        {
-
-            m_enemy.Move();
-
-            Destroy(engageTimer);
-        }
-
-        // evaluate if enemy can/should attack
-        m_enemy.EvaluateAttackConditions();
+        m_enemy.OnUpdate();
         //if (m_enemyType == EnemyTypes.EnemyLeader)
         //{
         //    ((EnemyLeader)m_enemy).DoBuff();
@@ -104,12 +90,10 @@ public class EnemyAvatar : MonoBehaviour
     }
     void OnCollisionEnter(Collision coll)
     {
-        Debug.Log("e");
         // Check if collided with player's spell
         if (coll.gameObject.tag == "Projectile")
         {
             m_enemy.LooseHealth(coll.gameObject.GetComponent<Projectile>().GetDamage());
-            Debug.Log("enemy hitted projectile");
         }
 
     }
@@ -121,29 +105,35 @@ public class EnemyAvatar : MonoBehaviour
     }
 
     // creates the circle ui element around the enemy
-    void CreatePoints()
+    //void CreatePoints()
+    //{
+    //    line = gameObject.GetComponent<LineRenderer>();
+    //    yradius = 0.05f;
+    //    xradius = 0.05f;
+    //    line.positionCount = segments + 1;
+    //    line.useWorldSpace = false;
+
+    //    float x;
+    //    float z;
+
+    //    float angle = 20f;
+
+    //    for (int i = 0; i < (segments + 1); i++)
+    //    {
+    //        x = Mathf.Sin(Mathf.Deg2Rad * angle) * xradius;
+    //        z = Mathf.Cos(Mathf.Deg2Rad * angle) * yradius;
+
+    //        line.SetPosition(i, new Vector3(x, 0, z));
+
+    //        angle += (360f / segments);
+    //    }
+    //}
+
+    public void OnAttackAnimEvent()
     {
-        line = gameObject.GetComponent<LineRenderer>();
-        yradius = m_range / transform.lossyScale.x;
-        xradius = m_range / transform.lossyScale.x;
-        line.positionCount = segments + 1;
-        line.useWorldSpace = false;
-
-        float x;
-        float z;
-
-        float angle = 20f;
-
-        for (int i = 0; i < (segments + 1); i++)
-        {
-            x = Mathf.Sin(Mathf.Deg2Rad * angle) * xradius;
-            z = Mathf.Cos(Mathf.Deg2Rad * angle) * yradius;
-
-            line.SetPosition(i, new Vector3(x, 0, z));
-
-            angle += (360f / segments);
-        }
+        m_enemy.OnAttackAnimEvent();
     }
-
-
+    public void DeathAnimEvent() {
+        m_enemy.OnDeathAnimEvent();
+    }
 }

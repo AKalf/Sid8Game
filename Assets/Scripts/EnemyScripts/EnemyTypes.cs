@@ -17,7 +17,7 @@ using UnityEngine.AI;
 */
 public enum States
 {
-    readyToAttack, InCooldown, OnDeath
+    readyToAttack, OnCooldown, OnDeath, Moving
 }
 
 
@@ -27,14 +27,16 @@ public abstract class Enemy
     protected int m_damage;
     protected float m_health;
     protected float m_speed;
+    protected float m_acceleration = 5.0f;
     protected float m_attackRange;
     protected float m_attackSpeed;
     protected GameObject m_thisGameObject;
     protected GameObject m_player;
-    protected States m_attackState = States.readyToAttack;
+    protected List<States> states = new List<States>();
     protected float m_distanceFromPlayer;
     protected NavMeshAgent thisAgent = null;
-
+    protected Animator thisAnimator = null;
+    protected Timer damageAnimTimer ;
 
     // the basic constructor for all enemies
     protected Enemy(int tempDamage, float tempHealth, float tempSpeed, float tempRange, float tempAttackSpeed, GameObject thisGameobject)
@@ -47,11 +49,14 @@ public abstract class Enemy
         m_thisGameObject = thisGameobject;
         m_player = GameObject.FindGameObjectWithTag("Player");
         thisAgent = m_thisGameObject.GetComponent<NavMeshAgent>();
+        thisAnimator = m_thisGameObject.GetComponent<Animator>();
         // m_thisGameObject.GetComponent<NavMeshAgent>().stoppingDistance = m_attackRange - 2; // stop moving when player is in attack range 
         m_thisGameObject.AddComponent<Timer>(); // get a timer
-        thisAgent.speed = m_speed;
-        thisAgent.acceleration = 5000f;
-        thisAgent.autoBraking = false;
+        thisAgent.speed = 1;
+        states.Add(States.readyToAttack);
+        states.Add(States.Moving);
+        damageAnimTimer = m_thisGameObject.AddComponent<Timer>();
+        damageAnimTimer.SetTime(4.0f);
     }
 
     // Check if enemy should attack
@@ -63,24 +68,25 @@ public abstract class Enemy
         // evaluate if cooldown is done
         if (m_thisGameObject.GetComponent<Timer>().GetTime() >= m_attackSpeed)
         {
-            m_attackState = States.readyToAttack;
+            states.Add(States.readyToAttack);
         }
         // evaluate if player in range
-        if (m_distanceFromPlayer <= m_attackRange && m_attackState == States.readyToAttack)
+        if (m_distanceFromPlayer <= m_attackRange && states.Contains(States.readyToAttack))
         {
             Attack();
         }
 
     }
-    // the default attack of enemies
+    // Start attack animation
     protected virtual void Attack()
     {
-        m_player.GetComponentInParent<PlayerHealth>().LooseHP(m_damage); // inflict damage to player
-        m_thisGameObject.GetComponent<Timer>().StopAndReset(); // set cooldown timer to 0
-        m_thisGameObject.GetComponent<Timer>().StartTimer(); // start counting time to cooldown      
-        m_attackState = States.InCooldown; // set this enemy state to "being on cooldown"
-        Debug.Log("Attacked");
+        states.Remove(States.readyToAttack);
+        states.Remove(States.Moving);
+        if (thisAnimator != null) {
+            thisAnimator.SetBool("Attacking", true);
+        }
     }
+   
     // called by other objects to inflict damage and check if this unit should die
     public void LooseHealth(int dmgTaken)
     {
@@ -88,6 +94,15 @@ public abstract class Enemy
         if (m_health <= 0) // check if health > 0
         {
             Die();
+        }
+        else if (damageAnimTimer.GetTime() >= 1.5f){
+            damageAnimTimer.StopAndReset();
+            damageAnimTimer.StartTimer();
+            thisAgent.speed = 0;
+            
+            thisAnimator.SetLayerWeight(1, UnityEngine.Random.Range(0.2f, 0.6f));
+            thisAnimator.SetFloat("Speed", 2 - thisAnimator.GetLayerWeight(1));
+            thisAnimator.SetTrigger("OnHit");
         }
 
     }
@@ -106,19 +121,66 @@ public abstract class Enemy
     // How to die
     protected virtual void Die()
     {
-        Debug.Log("message sent" + this.m_thisGameObject.GetComponent<AudioSource>());
+        thisAgent.destination = m_thisGameObject.transform.position;
+        thisAgent.isStopped = true;
+        states.Clear();
+        states.Add(States.OnDeath);
+        thisAnimator.SetLayerWeight(1, 0);
+        thisAnimator.SetFloat("Speed", 1.0f);
+        thisAnimator.SetTrigger("OnDeath");
+        UnityEngine.Object.Destroy(m_thisGameObject.GetComponent<Collider>());
         //MessageDispatch.GetInstance().SendAudioMessageForDispatch("EnemyDied", this.m_thisGameObject.GetComponent<AudioSource>());
         EnemyManager.GetInstance().RemoveFromList(m_thisGameObject); // remove this gameobject from enemiesAlive list
 
-        UnityEngine.Object.Destroy(m_thisGameObject, 0.1f); // Destroy this gameObjec
+        
 
     }
     // Movement mechanism
-    public virtual void Move()
+    protected virtual void Move()
     {
-        m_thisGameObject.transform.LookAt(m_player.transform); // always look player        
-        thisAgent.destination = m_player.transform.position; // set destination of navAgent to player's transform
-
+        if (states.Contains(States.Moving))
+        {
+            if (thisAgent.speed > m_speed)
+            {
+                m_thisGameObject.transform.LookAt(m_player.transform); // always look player        
+                thisAgent.destination = m_player.transform.position; // set destination of navAgent to player's transform
+               
+            }
+            else {
+                thisAgent.speed += m_acceleration * Time.deltaTime;
+                thisAnimator.SetFloat("Speed", thisAgent.speed / m_speed);
+                m_thisGameObject.transform.LookAt(m_player.transform); // always look player        
+                thisAgent.destination = m_player.transform.position; // set destination of navAgent to player's transform
+            }
+        }
+        else {
+            thisAgent.speed = 0;
+           
+        }
+    }
+    // Synchronize functionality with animation
+    public virtual void OnAttackAnimEvent() {
+        // if player still in reach when animation attack event occurs 
+        if (m_distanceFromPlayer <= m_attackRange) {
+            m_player.GetComponentInParent<PlayerStats>().IncDecHealth(-m_damage); // inflict damage to player
+        }
+        m_thisGameObject.GetComponent<Timer>().StopAndReset(); // set cooldown timer to 0
+        m_thisGameObject.GetComponent<Timer>().StartTimer(); // start counting time to cooldown      
+        states.Add(States.OnCooldown); // set this enemy state to "being on cooldown"
+        states.Add(States.Moving);
+        thisAnimator.SetBool("Attacking", false); // set animator state to "walk"  
+    }
+    public virtual void OnDeathAnimEvent() {
+        m_thisGameObject.GetComponent<EnemyDrops>().SpawnDrops();
+        UnityEngine.Object.Destroy(m_thisGameObject, 5.0f); // Destroy this gameObjec
+        thisAnimator.SetFloat("Speed", 0);
+    }
+    public List<States> GetStates() {
+        return states;
+    }
+    public virtual void OnUpdate() {
+        Move();
+        EvaluateAttackConditions();
     }
 }
 
