@@ -114,7 +114,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 25
   damage: 1
-  manaCostPerShot: 10
+  manaCostPerShot: 15
 --- !u!135 &135958541186245492
 SphereCollider:
   m_ObjectHideFlags: 1

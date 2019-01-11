@@ -154,6 +154,14 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
+      - time: 1
+        functionName: OnEndAttackAnimEvent
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 37123dd50a252fd44a97d5690c462c77,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

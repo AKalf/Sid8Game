@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEditor;
+using UnityEngine.Serialization;
 public class Spawner : MonoBehaviour
 {
 
@@ -17,10 +18,12 @@ public class Spawner : MonoBehaviour
     */
 
 
-
-    public GameObject whatToSpawn;
-    public int unitsToSpawn = 10;
-    public float timeForSpawn = 10f;
+    [SerializeField]
+    GameObject unitToSpawn;
+    [SerializeField]
+    public int numberOfUnitsToSpawn = 10;
+    [SerializeField]
+    public int spawningFrequency = 10;
     //int unitsCounter = 0;   
     private bool startSpawing = false;
     public List<GameObject> spawnPoints = new List<GameObject>();
@@ -28,11 +31,18 @@ public class Spawner : MonoBehaviour
     private int unitsCounter = 0;
     private int indexOfSpawnpoints = 0;
     private Timer SpawnSoundTimer = null;
+    [SerializeField][HideInInspector]
+    public GameObject thisGO;
 
-
+    
+    private void Awake()
+    {
+        
+    }
     // Use this for initialization
     void Start()
     {
+        
         SpawnSoundTimer = gameObject.AddComponent<Timer>();
         timerForSpawning = gameObject.AddComponent<Timer>();
         Transform[] childerntransforms = GetComponentsInChildren<Transform>(); // Get childer spawners (positions that enemies should spawn)
@@ -76,11 +86,11 @@ public class Spawner : MonoBehaviour
         {
             indexOfSpawnpoints = 0;
         }
-        if (timerForSpawning.GetTime() >= timeForSpawn && unitsCounter <= unitsToSpawn)
+        if (timerForSpawning.GetTime() >= spawningFrequency && unitsCounter <= numberOfUnitsToSpawn)
         {
 
             // add this enemy as alive to EnemyManager's list: aliveEnemies
-            EnemyManager.GetInstance().AddToList(Instantiate(whatToSpawn, spawnPoints[indexOfSpawnpoints].transform.position, whatToSpawn.transform.rotation).gameObject);
+            EnemyManager.GetInstance().AddToList(Instantiate(unitToSpawn, spawnPoints[indexOfSpawnpoints].transform.position, unitToSpawn.transform.rotation).gameObject);
             timerForSpawning.StopAndReset();
             timerForSpawning.StartTimer();
             //Debug.Log("Spawned unit " + unitsCounter + " from position with index " + indexOfSpawnpoints);
@@ -89,7 +99,7 @@ public class Spawner : MonoBehaviour
             //MessageDispatch.GetInstance().SendAudioMessageForDispatch("EnemySpawned", this.gameObject.GetComponent<AudioSource>());
             //Debug.Log("unitsCounter " + unitsCounter + " and unitsToSpawn" + unitsToSpawn);
         }
-        else if (unitsCounter > unitsToSpawn)
+        else if (unitsCounter > numberOfUnitsToSpawn)
         {
             // remove this spawner from SpawnersManager list: activeSpawners
             SpawnersManager.GetInstance().RemoveFromList(this.gameObject);
@@ -98,6 +108,14 @@ public class Spawner : MonoBehaviour
             Destroy(this.gameObject, 5f);
         }
 
+
+    }
+    public GameObject GetUnitToSpawn() {
+        return unitToSpawn;
+    }
+    public void SetUnitToSpawn (GameObject unit)
+    {
+        unitToSpawn = unit;
 
     }
 

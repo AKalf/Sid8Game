@@ -164,11 +164,15 @@ public abstract class Enemy
         if (m_distanceFromPlayer <= m_attackRange) {
             m_player.GetComponentInParent<PlayerStats>().IncDecHealth(-m_damage); // inflict damage to player
         }
+        
+    }
+    public virtual void OnEndAttackAnimEvent() {
         m_thisGameObject.GetComponent<Timer>().StopAndReset(); // set cooldown timer to 0
         m_thisGameObject.GetComponent<Timer>().StartTimer(); // start counting time to cooldown      
         states.Add(States.OnCooldown); // set this enemy state to "being on cooldown"
         states.Add(States.Moving);
         thisAnimator.SetBool("Attacking", false); // set animator state to "walk"  
+
     }
     public virtual void OnDeathAnimEvent() {
         m_thisGameObject.GetComponent<EnemyDrops>().SpawnDrops();

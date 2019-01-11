@@ -136,4 +136,7 @@ public class EnemyAvatar : MonoBehaviour
     public void DeathAnimEvent() {
         m_enemy.OnDeathAnimEvent();
     }
+    public void OnEndAttackAnimEvent() {
+        m_enemy.OnEndAttackAnimEvent();
+    }
 }
