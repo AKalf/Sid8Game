@@ -2,7 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\Assets",
-    "\\Versions Descritpion"
+    "\\Assets\\Scripts\\EnemyScripts",
+    "\\Assets\\Sid8DemoFixed",
+    "\\Assets\\Sid8DemoFixed\\Sid8DemoFixed"
   ],
+  "SelectedNode": "\\Assets\\Sid8DemoFixed\\Sid8DemoFixed",
   "PreviewInSolutionExplorer": false
 }

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: ACOFireDemonOnHit
+  m_Controller: {fileID: 9100000, guid: 813231a18c26e304b964cd45560dfd45, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400002, guid: 2461bf2a3014e2c47b9c37c95eb4e52a, type: 3}
+    m_OverrideClip: {fileID: 7400002, guid: 2461bf2a3014e2c47b9c37c95eb4e52a, type: 3}
+  - m_OriginalClip: {fileID: 7400002, guid: 5075cce675c21c24893649f990434a46, type: 3}
+    m_OverrideClip: {fileID: 7400002, guid: 5075cce675c21c24893649f990434a46, type: 3}
+  - m_OriginalClip: {fileID: 7400002, guid: 7efd56c9c2641f54da50d70f790c01e8, type: 3}
+    m_OverrideClip: {fileID: 7400002, guid: 7efd56c9c2641f54da50d70f790c01e8, type: 3}
+  - m_OriginalClip: {fileID: 7400002, guid: 516ea7aef8c295b4787ddad6d816faa9, type: 3}
+    m_OverrideClip: {fileID: 7400002, guid: 516ea7aef8c295b4787ddad6d816faa9, type: 3}

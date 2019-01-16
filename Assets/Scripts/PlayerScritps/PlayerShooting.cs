@@ -24,17 +24,17 @@ public class PlayerShooting : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         pMana = GetComponent<PlayerStats>();
-        projManaCost = projectile.GetComponent<Projectile>().GetManaCost();
+        projManaCost = projectile.GetComponent<PlayerProjectiles>().GetManaCost();
 	}
 	
 	// Update is called once per frame
 	void Update () {
         if (Input.GetKey(KeyCode.Mouse0) && canShoot && pMana.GetCurrentMana() >= projManaCost)
         {  
-            GameObject newProjectile = Instantiate(projectile);
+            GameObject newProjectile = Instantiate(projectile, transform.position, transform.rotation);
             newProjectile.transform.position = shotPoint.transform.position;
             pMana.IncDecMana(-projManaCost);
-            newProjectile.GetComponent<Projectile>().SetTarget(target.position);
+
             canShoot = false;
         }
         if (!canShoot) {

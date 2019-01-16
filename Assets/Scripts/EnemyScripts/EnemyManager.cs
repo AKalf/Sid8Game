@@ -19,6 +19,7 @@ public class EnemyManager : MonoBehaviour
     private List<EnemyMessageHandler> enemiesMessageHandlers = new List<EnemyMessageHandler>();
     private Queue<EnemyMessage> enemiesMessages = new Queue<EnemyMessage>();
 
+    int numberOfSkeletons = 0;
     // Use this for initialization
     private EnemyManager() { }
     void Awake()
@@ -85,6 +86,12 @@ public class EnemyManager : MonoBehaviour
     // add an enemy to aliveEnemies list
     public void AddToList(GameObject enemy)
     {
+        if (enemy.tag.StartsWith("Skel")) {
+            numberOfSkeletons++;
+            if (numberOfSkeletons > 8) {
+                AudioManager.GetInstance().SetIfLoopingFsteps(true);
+            }
+        }
         activeEnemies.Add(enemy);
     }
     // remove an enemy from aliveEnemies list
@@ -92,6 +99,14 @@ public class EnemyManager : MonoBehaviour
     {
         if (activeEnemies.Contains(enemy))
         {
+            if (enemy.tag.StartsWith("Skel"))
+            {
+                numberOfSkeletons--;
+                if (numberOfSkeletons <= 8)
+                {
+                    AudioManager.GetInstance().SetIfLoopingFsteps(false);
+                }
+            }
             activeEnemies.Remove(enemy);
             if (activeEnemies.Count == 0)
             {

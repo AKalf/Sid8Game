@@ -21,6 +21,7 @@ public class GUIManager : MonoBehaviour
 
     [SerializeField]
     Text LevelText = null;
+
   
     //[SerializeField]
     //Image loosePanel = null; // loose window
@@ -93,7 +94,7 @@ public class GUIManager : MonoBehaviour
         playerHealthSlider.value = amount;
     }
     public void SetPlayerMaxHealth(int value) {
-        playerHealthSlider.maxValue = value;
+        playerHealthSlider.maxValue = value;    
     }
     public void InformPlayerManaSlider(int amount) {
         playerManaSlider.value = Mathf.Lerp(playerManaSlider.value, amount, Time.deltaTime * Mathf.Abs(playerManaSlider.value - amount));

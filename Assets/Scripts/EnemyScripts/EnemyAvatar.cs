@@ -27,6 +27,8 @@ public class EnemyAvatar : MonoBehaviour
     [HideInInspector]
     public GameObject projectile = null;
     [HideInInspector]
+    public Transform shootingPoint = null;
+    [HideInInspector]
     public float m_buffCooldown = 10f;
     private Enemy m_enemy;
     //private bool spawnSound = false;
@@ -61,7 +63,7 @@ public class EnemyAvatar : MonoBehaviour
         }
         else if (m_enemyType == EnemyTypes.EnemyRange)
         {
-           // m_enemy = new EnemyRange(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject, projectile, projectileSpeed);
+            m_enemy = new EnemyRange(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject, projectile, projectileSpeed, shootingPoint.gameObject);
 
         }
         else if (m_enemyType == EnemyTypes.EnemyLeader)
@@ -93,7 +95,7 @@ public class EnemyAvatar : MonoBehaviour
         // Check if collided with player's spell
         if (coll.gameObject.tag == "Projectile")
         {
-            m_enemy.LooseHealth(coll.gameObject.GetComponent<Projectile>().GetDamage());
+            m_enemy.LooseHealth(coll.gameObject.GetComponent<PlayerProjectiles>().GetDamage());
         }
 
     }
@@ -138,5 +140,11 @@ public class EnemyAvatar : MonoBehaviour
     }
     public void OnEndAttackAnimEvent() {
         m_enemy.OnEndAttackAnimEvent();
+    }
+    public void OnFootStep() {
+        if (!AudioManager.GetInstance().GetIfLoopingFsteps())
+        {
+            m_enemy.OnFootStep();
+        }
     }
 }

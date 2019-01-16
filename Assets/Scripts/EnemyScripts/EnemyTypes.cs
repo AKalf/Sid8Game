@@ -37,8 +37,17 @@ public abstract class Enemy
     protected NavMeshAgent thisAgent = null;
     protected Animator thisAnimator = null;
     protected Timer damageAnimTimer ;
-
-    // the basic constructor for all enemies
+    protected float minOnHitLayerWeight = 0.3f;
+    protected float maxOnHitLayerWeight = 0.7f;
+    /// <summary>
+    /// the basic constructor for all enemies
+    /// </summary>
+    /// <param name="tempDamage"></param>
+    /// <param name="tempHealth"></param>
+    /// <param name="tempSpeed"></param>
+    /// <param name="tempRange"></param>
+    /// <param name="tempAttackSpeed"></param>
+    /// <param name="thisGameobject">the gameobject that created this class object</param>
     protected Enemy(int tempDamage, float tempHealth, float tempSpeed, float tempRange, float tempAttackSpeed, GameObject thisGameobject)
     {
         m_damage = tempDamage;
@@ -57,9 +66,13 @@ public abstract class Enemy
         states.Add(States.Moving);
         damageAnimTimer = m_thisGameObject.AddComponent<Timer>();
         damageAnimTimer.SetTime(4.0f);
+        minOnHitLayerWeight = thisAnimator.GetFloat("minOnHitWeight");
+        maxOnHitLayerWeight = thisAnimator.GetFloat("maxOnHitWeight");
     }
 
-    // Check if enemy should attack
+    /// <summary>
+    /// Check if enemy should attack
+    /// </summary>
     public void EvaluateAttackConditions()
     {
         // find distance between player and this enemy
@@ -77,7 +90,10 @@ public abstract class Enemy
         }
 
     }
-    // Start attack animation
+    /// <summary>
+    /// Remove rdyToAttck and Moving states from current states
+    /// and start attack animation
+    /// </summary>
     protected virtual void Attack()
     {
         states.Remove(States.readyToAttack);
@@ -86,8 +102,10 @@ public abstract class Enemy
             thisAnimator.SetBool("Attacking", true);
         }
     }
-   
-    // called by other objects to inflict damage and check if this unit should die
+    /// <summary>
+    /// called by other objects to inflict damage and check if this unit should die
+    /// </summary>
+    /// <param name="dmgTaken"></param>
     public void LooseHealth(int dmgTaken)
     {
         m_health = m_health - dmgTaken; // change health
@@ -100,25 +118,33 @@ public abstract class Enemy
             damageAnimTimer.StartTimer();
             thisAgent.speed = 0;
             
-            thisAnimator.SetLayerWeight(1, UnityEngine.Random.Range(0.2f, 0.6f));
-            thisAnimator.SetFloat("Speed", 2 - thisAnimator.GetLayerWeight(1));
+            thisAnimator.SetLayerWeight(1, UnityEngine.Random.Range(minOnHitLayerWeight, maxOnHitLayerWeight));
+            thisAnimator.SetFloat("Speed", 2 - thisAnimator.GetLayerWeight(1)); // decrease speed for as much damage as animation weight
             thisAnimator.SetTrigger("OnHit");
         }
 
     }
-    // called by other objects to increase health 
+    /// <summary>
+    /// called by other objects to increase health 
+    /// </summary>
+    /// <param name="amount">the amount to increase </param>
     public void IncreaseHealth(int amount)
     {
         m_health = m_health + amount;
 
     }
-    // returns this enemy's current health
+    /// <summary>
+    /// returns this enemy's current health
+    /// </summary>
+    /// <returns></returns>
     public float GetHealth()
     {
         return m_health;
 
     }
-    // How to die
+    /// <summary>
+    /// How to die
+    /// </summary>
     protected virtual void Die()
     {
         thisAgent.destination = m_thisGameObject.transform.position;
@@ -135,7 +161,9 @@ public abstract class Enemy
         
 
     }
-    // Movement mechanism
+    /// <summary>
+    /// Movement mechanism
+    /// </summary>
     protected virtual void Move()
     {
         if (states.Contains(States.Moving))
@@ -158,14 +186,22 @@ public abstract class Enemy
            
         }
     }
-    // Synchronize functionality with animation
+    /// <summary>
+    /// Synchronize functionality with animations. Base functionality is null
+    /// </summary>
     public virtual void OnAttackAnimEvent() {
-        // if player still in reach when animation attack event occurs 
-        if (m_distanceFromPlayer <= m_attackRange) {
-            m_player.GetComponentInParent<PlayerStats>().IncDecHealth(-m_damage); // inflict damage to player
-        }
+      
         
     }
+    /// <summary>
+    ///  Set functionality when footstep is triggered
+    /// </summary>
+    public virtual void OnFootStep() {
+
+    }
+    /// <summary>
+    /// Set cooldown state and enable movement
+    /// </summary>
     public virtual void OnEndAttackAnimEvent() {
         m_thisGameObject.GetComponent<Timer>().StopAndReset(); // set cooldown timer to 0
         m_thisGameObject.GetComponent<Timer>().StartTimer(); // start counting time to cooldown      
@@ -179,9 +215,16 @@ public abstract class Enemy
         UnityEngine.Object.Destroy(m_thisGameObject, 5.0f); // Destroy this gameObjec
         thisAnimator.SetFloat("Speed", 0);
     }
+    /// <summary>
+    /// Get the list with this enemies current states
+    /// </summary>
+    /// <returns>list with current states</returns>
     public List<States> GetStates() {
         return states;
     }
+    /// <summary>
+    /// Put any code you want to run on Unity's Update()
+    /// </summary>
     public virtual void OnUpdate() {
         Move();
         EvaluateAttackConditions();
@@ -198,9 +241,51 @@ public class EnemyMellee : Enemy
 
     public EnemyMellee(int tempDamage, float tempHealth, float tempSpeed, float tempRange, float tempAttackSpeed, GameObject thisGameobject) : base(tempDamage, tempHealth, tempSpeed, tempRange, tempAttackSpeed, thisGameobject)
     {
-
+       
+    }
+    // Synchronize functionality with animations
+    public override void OnAttackAnimEvent()
+    {
+        // if player still in reach when animation attack event occurs 
+        if (m_distanceFromPlayer <= m_attackRange)
+        {
+            m_player.GetComponentInParent<PlayerStats>().IncDecHealth(-m_damage); // inflict damage to player
+        }
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("AtSkel", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    public override void OnFootStep()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("FstepSkel", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    public override void OnDeathAnimEvent()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("DeathSkel", m_thisGameObject.GetComponent<AudioSource>());
     }
 
+}
+
+public class EnemyRange : Enemy {
+    GameObject m_projectile;
+    GameObject m_shootingPoint;
+    float m_projectileSpeed;
+    public EnemyRange(int tempDamage, float tempHealth, float tempSpeed, float tempRange, float tempAttackSpeed, GameObject thisGameobject, GameObject projectile, float projectileSpeed, GameObject shootingPoint) : base(tempDamage, tempHealth, tempSpeed, tempRange, tempAttackSpeed, thisGameobject)
+    {
+        m_projectile = projectile;
+        m_projectileSpeed = projectileSpeed;
+        m_shootingPoint = shootingPoint;
+    }
+    /// <summary>
+    /// Creates a new projectile at the shootingPoint's position
+    /// </summary>
+    public override void OnAttackAnimEvent()
+    {
+        GameObject projectile = MonoBehaviour.Instantiate(m_projectile, m_shootingPoint.transform.position, m_shootingPoint.transform.rotation);
+        EnemyProjectiles projComp = projectile.AddComponent<EnemyProjectiles>();
+        projComp.SetEnemyWhoShot(this);
+    }
+    public int GetDamage() {
+        return m_damage;
+    }
 
 }
 

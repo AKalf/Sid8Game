@@ -25,15 +25,18 @@ public class DropBehaviour : MonoBehaviour {
         if (other.tag.StartsWith("Pl")) {
             switch (dropType) {
                 case DropType.HealthPotion:
-                    GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>().IncDecHealth(amount);
+                    MyGameManager.GetInstance().GetPlayer().GetComponent<PlayerStats>().IncDecHealth(amount);
+                    MessageDispatch.GetInstance().SendAudioMessageForDispatch("HpPickUp", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
                     Destroy(this.gameObject);
                     break;
                 case DropType.ManaPotion:
-                    GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>().IncDecMana(amount);
+                    MyGameManager.GetInstance().GetPlayer().GetComponent<PlayerStats>().IncDecMana(amount);
+                    MessageDispatch.GetInstance().SendAudioMessageForDispatch("ManaPickUp", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
                     Destroy(this.gameObject);
                     break;
                 case DropType.EXP:
-                    GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>().IncDecExp(amount);
+                    MyGameManager.GetInstance().GetPlayer().GetComponent<PlayerStats>().IncDecExp(amount);
+                    MessageDispatch.GetInstance().SendAudioMessageForDispatch("ExpPickUp", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
                     Destroy(this.gameObject);
                     break;
             }
