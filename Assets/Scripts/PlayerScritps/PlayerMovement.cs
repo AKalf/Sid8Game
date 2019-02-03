@@ -10,15 +10,21 @@ public class PlayerMovement : MonoBehaviour {
     float jumpForce = 5.0f;
     [SerializeField]
     float gravity = 8.6f;
+
     CharacterController charController = null;
 
-   float currentVerticalForce = 0.0f;
-   float airDrag = 1.0f;
+     
+    float currentVerticalForce = 0.0f;
+    float airDrag = 1.0f;
+
+    AudioSource pAudioSource = null;
 
 	// Use this for initialization
 	void Start () {
         charController = GetComponent<CharacterController>();
-        currentSpeed = playerSpeed;
+       
+        pAudioSource = GetComponent<AudioSource>();
+
     }
 	
 	// Update is called once per frame
@@ -36,7 +42,9 @@ public class PlayerMovement : MonoBehaviour {
             currentSpeed = playerSpeed;
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                currentSpeed = playerSpeed;
                 currentVerticalForce = jumpForce;
+                MessageDispatch.GetInstance().SendAudioMessageForDispatch("JumpPl", pAudioSource);
             }
 
         }
@@ -54,6 +62,8 @@ public class PlayerMovement : MonoBehaviour {
         Vector3 movement = transform.forward * z * currentSpeed + transform.right * x * currentSpeed + transform.up * currentVerticalForce;
         movement -= new Vector3(x * -airDrag, 0, z * -airDrag);
         charController.Move(movement * Time.deltaTime);
+           
+        
     }
     public float GetCurrentSpeed() {
         return currentSpeed;

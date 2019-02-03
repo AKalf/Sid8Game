@@ -31,7 +31,7 @@ public class EnemyProjectiles : MonoBehaviour {
             collision.transform.GetComponent<PlayerStats>().IncDecHealth(-enemyWhoShotProjectile.GetDamage());
             Destroy(this.gameObject);
         }
-        else {
+        else if (collision.tag == "Env") {
             Destroy(this.gameObject);
         }
     }

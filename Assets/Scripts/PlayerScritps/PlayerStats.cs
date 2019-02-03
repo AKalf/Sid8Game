@@ -55,11 +55,23 @@ public class PlayerStats : MonoBehaviour {
     {
         currentHealth += amount;
         GUIManager.GetInstance().InformPlayerHPSlider(currentHealth);
-        
+        if (amount < 0)
+        {
+            if (currentHealth <= (maxHealth / 100) * 15)
+            {
+                MessageDispatch.GetInstance().SendAudioMessageForDispatch("OnHitLPl", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
+            }
+            else
+            {
+                MessageDispatch.GetInstance().SendAudioMessageForDispatch("OnHitPl", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
+            }
+        }
+        else {
+            MessageDispatch.GetInstance().SendAudioMessageForDispatch("GainHpPl", MyGameManager.GetInstance().GetPlayer().GetComponent<AudioSource>());
+        }
         if (currentHealth <= 0)
         {
             Debug.Log("Player is dead");
-
         }
 
     }

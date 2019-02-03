@@ -37,12 +37,19 @@ public class EnemyManager : MonoBehaviour
             EnemyMessage msg = enemiesMessages.Dequeue();
             try
             {
-                // send the message to the handlers that are interested
-                foreach (EnemyMessageHandler messageHandler in enemiesMessageHandlers)
+                if (msg.message == "FstepSkel" && AudioManager.GetInstance().GetIfLoopingFsteps())
                 {
-                    //Debug.Log(msg.message);
-                    messageHandler(msg.message);
+
                 }
+                else {
+                    // send the message to the handlers that are interested
+                    foreach (EnemyMessageHandler messageHandler in enemiesMessageHandlers)
+                    {
+                        //Debug.Log(msg.message);
+                        messageHandler(msg.message);
+                    }
+                }
+               
             }
             catch
             {
@@ -87,10 +94,7 @@ public class EnemyManager : MonoBehaviour
     public void AddToList(GameObject enemy)
     {
         if (enemy.tag.StartsWith("Skel")) {
-            numberOfSkeletons++;
-            if (numberOfSkeletons > 8) {
-                AudioManager.GetInstance().SetIfLoopingFsteps(true);
-            }
+            numberOfSkeletons++;   
         }
         activeEnemies.Add(enemy);
     }
@@ -102,7 +106,7 @@ public class EnemyManager : MonoBehaviour
             if (enemy.tag.StartsWith("Skel"))
             {
                 numberOfSkeletons--;
-                if (numberOfSkeletons <= 8)
+                if (numberOfSkeletons <= 3)
                 {
                     AudioManager.GetInstance().SetIfLoopingFsteps(false);
                 }

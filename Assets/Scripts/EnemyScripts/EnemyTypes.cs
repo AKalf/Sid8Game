@@ -106,7 +106,7 @@ public abstract class Enemy
     /// called by other objects to inflict damage and check if this unit should die
     /// </summary>
     /// <param name="dmgTaken"></param>
-    public void LooseHealth(int dmgTaken)
+    public virtual void LooseHealth(int dmgTaken)
     {
         m_health = m_health - dmgTaken; // change health
         if (m_health <= 0) // check if health > 0
@@ -189,14 +189,21 @@ public abstract class Enemy
     /// <summary>
     /// Synchronize functionality with animations. Base functionality is null
     /// </summary>
-    public virtual void OnAttackAnimEvent() {
-      
-        
+    public virtual void OnAttackAnimEvent()
+    {
+
+
     }
     /// <summary>
     ///  Set functionality when footstep is triggered
     /// </summary>
-    public virtual void OnFootStep() {
+    public virtual void OnFootStepEvent() {
+
+    }
+    /// <summary>
+    ///  Set functionality when "getting hit" is triggered. Basic is null
+    /// </summary>
+    public virtual void OnHitEvent() {
 
     }
     /// <summary>
@@ -210,10 +217,13 @@ public abstract class Enemy
         thisAnimator.SetBool("Attacking", false); // set animator state to "walk"  
 
     }
+    /// <summary>
+    /// Basic functionality: Drop items, Destroy after 5 sec, set animation speed to 1
+    /// </summary>
     public virtual void OnDeathAnimEvent() {
         m_thisGameObject.GetComponent<EnemyDrops>().SpawnDrops();
         UnityEngine.Object.Destroy(m_thisGameObject, 5.0f); // Destroy this gameObjec
-        thisAnimator.SetFloat("Speed", 0);
+        thisAnimator.SetFloat("Speed", 1);
     }
     /// <summary>
     /// Get the list with this enemies current states
@@ -253,13 +263,18 @@ public class EnemyMellee : Enemy
         }
         MessageDispatch.GetInstance().SendAudioMessageForDispatch("AtSkel", m_thisGameObject.GetComponent<AudioSource>());
     }
-    public override void OnFootStep()
+    public override void OnFootStepEvent()
     {
         MessageDispatch.GetInstance().SendAudioMessageForDispatch("FstepSkel", m_thisGameObject.GetComponent<AudioSource>());
     }
     public override void OnDeathAnimEvent()
     {
+        base.OnDeathAnimEvent() ;
         MessageDispatch.GetInstance().SendAudioMessageForDispatch("DeathSkel", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    public override void OnHitEvent()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("OnHitSkel", m_thisGameObject.GetComponent<AudioSource>());
     }
 
 }
@@ -281,11 +296,121 @@ public class EnemyRange : Enemy {
     {
         GameObject projectile = MonoBehaviour.Instantiate(m_projectile, m_shootingPoint.transform.position, m_shootingPoint.transform.rotation);
         EnemyProjectiles projComp = projectile.AddComponent<EnemyProjectiles>();
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("AtFDeam", m_thisGameObject.GetComponent<AudioSource>());
         projComp.SetEnemyWhoShot(this);
+    }
+    public override void OnHitEvent()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("OnHitFDeam", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    protected override void Die()
+    {
+        base.Die();
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("DeathFDeam", m_thisGameObject.GetComponent<AudioSource>());
     }
     public int GetDamage() {
         return m_damage;
     }
 
+}
+
+public class EnemyGolem : Enemy
+{
+
+    GameObject torus = null;
+    float m_torusScaleSpeed = 15.0f;
+    float m_torusMaxScaleTimes = 5;
+    float m_specialSkillRange = 10.0f;
+    float m_specialSkillCd = 10.0f;
+
+    Timer spSkillTimer;
+    Vector3 startingScale = Vector3.zero;
+    bool isTorusScaling = false;
+    bool isSpSkillOnCd = false;
+
+    public EnemyGolem(float specialSkillCooldown, float specialSkillRange, float torusMaxScaleTimes, float torusScaleSpeed, int tempDamage, float tempHealth, float tempSpeed, float tempRange, float tempAttackSpeed, GameObject thisGameobject) : base(tempDamage, tempHealth, tempSpeed, tempRange, tempAttackSpeed, thisGameobject)
+    {
+        torus = m_thisGameObject.transform.GetChild(0).gameObject;
+        m_torusScaleSpeed = torusScaleSpeed;
+        m_torusMaxScaleTimes = torusMaxScaleTimes;
+        m_specialSkillRange = specialSkillRange;
+        startingScale = torus.transform.localScale;
+        spSkillTimer = m_thisGameObject.AddComponent<Timer>();
+        
+    }
+
+    public void OnSpecialAttackAnimEvent()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("SpSkillGolem", m_thisGameObject.GetComponent<AudioSource>());
+        torus.SetActive(true);
+        isTorusScaling = true;
+    }
+    public void OnSpecialAttackEndAnimEvent()
+    {
+        states.Add(States.Moving);
+        states.Add(States.readyToAttack);
+    }
+    public override void OnFootStepEvent()
+    {
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("FtSpGolem", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    public override void OnAttackAnimEvent()
+    {
+        
+        if (m_distanceFromPlayer <= m_attackRange)
+        {
+            m_player.GetComponentInParent<PlayerStats>().IncDecHealth(-m_damage); // inflict damage to player
+        }
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("AtGolem", m_thisGameObject.GetComponent<AudioSource>());
+    }
+    public override void OnDeathAnimEvent()
+    {
+        base.OnDeathAnimEvent();
+        MessageDispatch.GetInstance().SendAudioMessageForDispatch("DeathGolem", m_thisGameObject.GetComponent<AudioSource>());
+    }
+
+    private void ScaleTorus() {
+        torus.transform.localScale += new Vector3(m_torusScaleSpeed * Time.deltaTime, 0, m_torusScaleSpeed * Time.deltaTime);
+        if (torus.transform.localScale.x >  m_torusMaxScaleTimes)
+        {
+            torus.transform.localScale = startingScale;
+            isTorusScaling = false;
+            torus.SetActive(false);
+        }
+       
+    }
+    public override void OnUpdate()
+    {
+        base.OnUpdate();
+        if (isTorusScaling) {
+            ScaleTorus();
+        }
+        else
+        {
+           
+            if (!isSpSkillOnCd)
+            {
+                if (Vector3.Distance(MyGameManager.GetInstance().GetPlayer().transform.position, m_thisGameObject.transform.position) <= m_specialSkillRange)
+                {
+                    states.Remove(States.Moving);
+                    states.Remove(States.readyToAttack);
+                    thisAnimator.SetTrigger("SpecialSkill");
+                    isSpSkillOnCd = true;
+                    spSkillTimer.StartTimer();
+                }
+            }
+            else
+            {
+                if (spSkillTimer.GetTime() >= m_specialSkillCd)
+                {
+                    isSpSkillOnCd = false;
+                    spSkillTimer.StopAndReset();
+                }
+            }
+        }
+        
+        
+
+    }
 }
 

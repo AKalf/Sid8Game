@@ -10,9 +10,12 @@ public class EditorExtensionNewEnemy : Editor {
     SerializedProperty m_projectile;
     SerializedProperty m_speedOfProjectile;
     SerializedProperty m_shootingPoint;
-    SerializedProperty  m_buffRange;
-    SerializedProperty m_buffAmount;
-	SerializedProperty m_buffCooldown; 
+
+    SerializedProperty torusScaleSpeed;
+    SerializedProperty torusMaxScaleTimes;
+    SerializedProperty specialSkillRange;
+    SerializedProperty specialSkillCooldown;
+
     //GameObject m_projectile;
     void OnEnable()
     {
@@ -22,9 +25,11 @@ public class EditorExtensionNewEnemy : Editor {
         m_projectile = serializedObject.FindProperty("projectile"); // find property projectile of script "NewEnemy"
         m_speedOfProjectile = serializedObject.FindProperty("projectileSpeed"); // find property projectile of script "NewEnemy"
         m_shootingPoint = serializedObject.FindProperty("shootingPoint");
-        m_buffRange = serializedObject.FindProperty("m_buffRange"); // find property the buffrange property of script "NewEnemy"
-        m_buffAmount = serializedObject.FindProperty("m_buffAmount");
-		m_buffCooldown = serializedObject.FindProperty("m_buffCooldown");
+
+        torusScaleSpeed = serializedObject.FindProperty("torusScaleSpeed"); 
+        torusMaxScaleTimes = serializedObject.FindProperty("torusMaxScaleTimes");
+        specialSkillRange = serializedObject.FindProperty("specialSkillRange");
+        specialSkillCooldown = serializedObject.FindProperty("specialSkillCooldown");
 
     }
     
@@ -43,13 +48,16 @@ public class EditorExtensionNewEnemy : Editor {
             m_projectile.serializedObject.ApplyModifiedProperties();
 
         }
-        else if (m_script.m_enemyType == EnemyTypes.EnemyLeader) {
-            EditorGUILayout.PropertyField(m_buffRange, new GUIContent("Select buff range"));
-            EditorGUILayout.PropertyField(m_buffAmount, new GUIContent("Select buff amount"));
-			EditorGUILayout.PropertyField(m_buffCooldown, new GUIContent("Select buff's cooldown"));
-            m_buffRange.serializedObject.ApplyModifiedProperties();
-            m_buffAmount.serializedObject.ApplyModifiedProperties();
-			m_buffCooldown.serializedObject.ApplyModifiedProperties ();
+        else if (m_script.m_enemyType == EnemyTypes.EnemyGolem) {
+            EditorGUILayout.PropertyField(torusScaleSpeed, new GUIContent("Scale speed"));
+            EditorGUILayout.PropertyField(torusMaxScaleTimes, new GUIContent("Special skill max scale"));
+            EditorGUILayout.PropertyField(specialSkillRange, new GUIContent("Special skill trigger range"));
+            EditorGUILayout.PropertyField(specialSkillCooldown, new GUIContent("Special skill Cooldown"));
+
+            specialSkillRange.serializedObject.ApplyModifiedProperties();
+            torusScaleSpeed.serializedObject.ApplyModifiedProperties();
+            torusMaxScaleTimes.serializedObject.ApplyModifiedProperties();
+            specialSkillCooldown.serializedObject.ApplyModifiedProperties();
         }
         
     }

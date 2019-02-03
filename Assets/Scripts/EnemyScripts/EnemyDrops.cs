@@ -11,9 +11,9 @@ public class EnemyDrops : MonoBehaviour {
     GameObject healthDropPrefab = null;
 
     [SerializeField]
-    static int chancesPercentForHealthDrop = 10;
+    static int chancesPercentForHealthDrop = 20;
     [SerializeField]
-    static int chancesPercentForManaDrop = 20;
+    static int chancesPercentForManaDrop = 45;
 
     public void SpawnDrops() {
 

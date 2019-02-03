@@ -5,7 +5,7 @@ using UnityEngine.AI;
 
 
 
-public enum EnemyTypes { EnemyMellee, EnemyRange, EnemyLeader }
+public enum EnemyTypes { EnemyMellee, EnemyRange, EnemyGolem }
 /*
  * Creates a new enemy
  * Sets enemy's type and stats, based on the given parameters
@@ -18,18 +18,24 @@ public class EnemyAvatar : MonoBehaviour
     public float m_range;
     public float m_attackSpeed;
     public EnemyTypes m_enemyType;
-    [HideInInspector]
-    public int m_buffAmount;
-    [HideInInspector]
-    public float m_buffRange;
+   
     [HideInInspector]
     public float projectileSpeed = 10f;
     [HideInInspector]
     public GameObject projectile = null;
     [HideInInspector]
     public Transform shootingPoint = null;
+
     [HideInInspector]
-    public float m_buffCooldown = 10f;
+    public float torusScaleSpeed = 15.0f;
+    [HideInInspector]
+    public float torusMaxScaleTimes = 5;
+    [HideInInspector]
+    public float specialSkillRange = 10.0f;
+    [HideInInspector]
+    public float specialSkillCooldown = 10.0f;
+
+
     private Enemy m_enemy;
     //private bool spawnSound = false;
 
@@ -64,14 +70,17 @@ public class EnemyAvatar : MonoBehaviour
         else if (m_enemyType == EnemyTypes.EnemyRange)
         {
             m_enemy = new EnemyRange(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject, projectile, projectileSpeed, shootingPoint.gameObject);
+            MessageDispatch.GetInstance().SendAudioMessageForDispatch("SpawnFDeam", GetComponent<AudioSource>());
 
         }
-        else if (m_enemyType == EnemyTypes.EnemyLeader)
+        else if (m_enemyType == EnemyTypes.EnemyGolem)
         {
-          //  m_enemy = new EnemyLeader(m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject, m_buffRange, m_buffAmount, m_buffCooldown);
-
+            m_enemy = new EnemyGolem(specialSkillCooldown, specialSkillRange, torusMaxScaleTimes, torusScaleSpeed, m_dmg, m_health, m_speed, m_range, m_attackSpeed, this.gameObject);
         }
-        this.gameObject.AddComponent<AudioSource>().volume = 1f;
+        if (GetComponent<AudioSource>() == null)
+        {
+            this.gameObject.AddComponent<AudioSource>().volume = 1f;
+        }
     }
 
     // Update is called once per frame
@@ -83,11 +92,7 @@ public class EnemyAvatar : MonoBehaviour
         //        spawnSound = true;
         //    }
         m_enemy.OnUpdate();
-        //if (m_enemyType == EnemyTypes.EnemyLeader)
-        //{
-        //    ((EnemyLeader)m_enemy).DoBuff();
-
-        //}
+        
 
     }
     void OnCollisionEnter(Collision coll)
@@ -141,10 +146,26 @@ public class EnemyAvatar : MonoBehaviour
     public void OnEndAttackAnimEvent() {
         m_enemy.OnEndAttackAnimEvent();
     }
-    public void OnFootStep() {
-        if (!AudioManager.GetInstance().GetIfLoopingFsteps())
+    public void OnFootStepEvent() {
+        if (m_enemyType == EnemyTypes.EnemyMellee)
         {
-            m_enemy.OnFootStep();
+            if (!AudioManager.GetInstance().GetIfLoopingFsteps())
+            {
+                m_enemy.OnFootStepEvent();
+            }
         }
+        else {
+            m_enemy.OnFootStepEvent();
+        }
+    }
+    public void OnHitEvent() {
+        m_enemy.OnHitEvent();
+    }
+
+    public void OnSpecialAttackEvent() {
+        ((EnemyGolem)m_enemy).OnSpecialAttackAnimEvent();
+    }
+    public void OnSpecialAttackEndAnimEvent() {
+        ((EnemyGolem)m_enemy).OnSpecialAttackEndAnimEvent();
     }
 }

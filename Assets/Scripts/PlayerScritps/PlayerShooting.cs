@@ -5,8 +5,7 @@ using UnityEngine;
 public class PlayerShooting : MonoBehaviour {
     [SerializeField]
     Transform shotPoint;
-    [SerializeField]
-    Transform target;
+    
 
     [SerializeField]
     float fireRate = 0.2f;
